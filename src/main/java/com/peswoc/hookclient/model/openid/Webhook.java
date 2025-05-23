@@ -27,7 +27,7 @@ public class Webhook extends BaseSqlEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "server_id", nullable = false)
-  private ConnectedServer connectedServer;
+  private AcceptedConnection connection;
 
   @Column(name = "event", columnDefinition = "TINYINT", nullable = false)
   @Convert(converter = HookEventConverter.class)
@@ -40,9 +40,9 @@ public class Webhook extends BaseSqlEntity {
   @Column(name = "redirect_url", nullable = false)
   private String redirectUrl;
 
-  public Webhook(ConnectedServer connectedServer, HookEvent event, HookScope scope, String redirectUrl) {
+  public Webhook(AcceptedConnection connection, HookEvent event, HookScope scope, String redirectUrl) {
     super();
-    this.connectedServer = connectedServer;
+    this.connection = connection;
     this.event = event;
     this.scope = scope;
     this.redirectUrl = redirectUrl;

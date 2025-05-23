@@ -79,7 +79,7 @@ public class ValidationUtils {
     if (domain == null) return false;
     try {
       URL url = new URL(domain);
-      return url.getProtocol().equals("https");
+      return url.getProtocol().equals("https") || url.getProtocol().equals("http");
     } catch (MalformedURLException e) {
       return false;
     }

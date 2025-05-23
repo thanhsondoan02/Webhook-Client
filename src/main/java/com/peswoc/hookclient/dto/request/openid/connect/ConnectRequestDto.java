@@ -10,5 +10,5 @@ import lombok.Setter;
 public class ConnectRequestDto {
   private String name;
   private String domain;
-  private String callbackUrl;
+  private String targetDomain;
 }
