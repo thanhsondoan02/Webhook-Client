@@ -32,6 +32,9 @@ public final class MessageConst {
   public static final String GROUP_NOT_FOUND = "Group not found";
   public static final String USER_ALREADY_IN_GROUP = "User already in group";
 
+  // Webhook
+  public static final String CONNECTION_NOT_FOUND = "Connection not found";
+
   private MessageConst() {
   }
 }

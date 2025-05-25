@@ -1,14 +1,18 @@
 package com.peswoc.hookclient.service;
 
-import com.peswoc.hookclient.constant.ConnectionAction;
 import com.peswoc.hookclient.constant.ConnectionStatus;
-import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestDto;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionDto;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionListResponseDto;
+import com.peswoc.hookclient.model.openid.PendingConnection;
 
 public interface IOpenIdService {
-  ConnectionDto addPendingConnections(ConnectRequestDto request);
+  ConnectionDto savePendingConnection(PendingConnection connection);
+
   boolean isConnectionExistAndPending(String id);
-  ConnectionDto updateConnection(String id, ConnectionAction action);
+
+  void rejectConnection(String id);
+
+  ConnectionDto acceptConnection(String id, String clientId, String clientSecret);
+
   ConnectionListResponseDto getConnections(ConnectionStatus status);
 }

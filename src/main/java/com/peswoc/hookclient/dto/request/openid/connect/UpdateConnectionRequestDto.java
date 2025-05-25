@@ -7,9 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class ConnectRequestDto {
-  private String name;
-  private String domain;
-  private String callbackUrl;
-  private String targetDomain;
+public class UpdateConnectionRequestDto {
+  private String action;
+  private String clientId;
+  private String clientSecret;
 }

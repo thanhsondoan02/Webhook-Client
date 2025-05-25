@@ -12,8 +12,4 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class PendingConnection extends BaseConnection {
-
-  public PendingConnection(String name, String domain, String callbackUrl, String targetDomain) {
-    super(name, domain, callbackUrl, targetDomain);
-  }
 }

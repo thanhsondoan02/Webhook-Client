@@ -25,11 +25,6 @@ public class BaseConnection extends BaseSqlEntity {
   @Column(name = "target_domain", nullable = false)
   protected String targetDomain;
 
-  public BaseConnection(String name, String domain, String callbackUrl, String targetDomain) {
-    super();
-    this.name = name;
-    this.domain = domain;
-    this.callbackUrl = callbackUrl;
-    this.targetDomain = targetDomain;
-  }
+  @Column(name = "target_id", nullable = false)
+  protected String targetId;
 }
