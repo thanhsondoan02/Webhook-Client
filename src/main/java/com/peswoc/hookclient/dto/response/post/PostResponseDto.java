@@ -18,5 +18,14 @@ public class PostResponseDto {
     this.content = post.getContent();
     this.userId = post.getUserId();
   }
+
+  public Post toPost() {
+    Post post = new Post();
+    post.setId(id);
+    post.setTitle(title);
+    post.setContent(content);
+    post.setUserId(userId);
+    return post;
+  }
 }
 

@@ -36,6 +36,7 @@ public class ConnectionDto {
 
     if (connection instanceof AcceptedConnection accepted) {
       this.clientId = accepted.getClientId();
+      this.clientSecret = accepted.getClientSecret();
       this.status = ConnectionStatus.ACCEPTED.toString();
     }
 

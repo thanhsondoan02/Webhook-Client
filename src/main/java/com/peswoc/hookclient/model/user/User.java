@@ -1,7 +1,9 @@
 package com.peswoc.hookclient.model.user;
 
 import com.peswoc.hookclient.constant.Gender;
+import com.peswoc.hookclient.constant.Role;
 import com.peswoc.hookclient.model.base.BaseSqlEntity;
+import com.peswoc.hookclient.util.convert.RoleConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -26,8 +28,7 @@ public class User extends BaseSqlEntity {
   @Column(name = "email", length = 100, nullable = false, unique = true)
   private String email;
 
-  @NotNull
-  @Column(name = "password_hash", length = 255, nullable = false)
+  @Column(name = "password_hash", length = 255)
   private String passwordHash;
 
   @Column(name = "full_name", length = 100)
@@ -36,6 +37,10 @@ public class User extends BaseSqlEntity {
   @Column(name = "gender", columnDefinition = "TINYINT")
   @Convert(converter = GenderConverter.class)
   private Gender gender;
+
+  @Column(name = "role", columnDefinition = "TINYINT")
+  @Convert(converter = RoleConverter.class)
+  private Role role;
 
   @Column(name = "date_of_birth")
   private Long dateOfBirth;

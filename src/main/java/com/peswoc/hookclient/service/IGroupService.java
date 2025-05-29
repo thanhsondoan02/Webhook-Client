@@ -8,6 +8,7 @@ import com.peswoc.hookclient.dto.response.group.GroupResponseDto;
 
 public interface IGroupService {
   GroupResponseDto createGroup(CreateGroupRequestDto request);
+  void syncGroups(GroupListResponseDto data);
   boolean isGroupExistAndActive(String id);
   boolean isInGroup(String userId, String groupId);
   boolean isGroupAdmin(String userId, String groupId);

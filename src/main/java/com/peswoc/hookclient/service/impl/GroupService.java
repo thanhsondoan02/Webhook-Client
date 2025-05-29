@@ -15,6 +15,7 @@ import com.peswoc.hookclient.service.IGroupService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Service
 public class GroupService implements IGroupService {
@@ -47,6 +48,15 @@ public class GroupService implements IGroupService {
       savedGroup.getThumbnail(),
       savedGroup.getGroupUsers()
     );
+  }
+
+  @Override
+  public void syncGroups(GroupListResponseDto data) {
+    var groups = data.getGroups().stream()
+      .map(GroupResponseDto::toGroup)
+      .filter(Objects::nonNull)
+      .toList();
+    groupRepository.saveAll(groups);
   }
 
   @Override

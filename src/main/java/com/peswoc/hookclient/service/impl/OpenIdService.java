@@ -17,30 +17,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OpenIdService implements IOpenIdService {
 
   private final AcceptedConnectionRepository acceptedConnectionRepo;
   private final PendingConnectionRepository pendingConnectionRepo;
-  private final AuthenticationManager authenticationManager;
-  private final JwtUtils jwtUtils;
-  private final PasswordEncoder passwordEncoder;
 
   public OpenIdService(
     AcceptedConnectionRepository acceptedConnectionRepo,
-    PendingConnectionRepository pendingConnectionRepo,
-    AuthenticationManager authenticationManager,
-    JwtUtils jwtUtils,
-    PasswordEncoder passwordEncoder
+    PendingConnectionRepository pendingConnectionRepo
   ) {
     this.acceptedConnectionRepo = acceptedConnectionRepo;
     this.pendingConnectionRepo = pendingConnectionRepo;
-    this.authenticationManager = authenticationManager;
-    this.jwtUtils = jwtUtils;
-    this.passwordEncoder = passwordEncoder;
   }
-
 
   @Override
   public ConnectionDto savePendingConnection(PendingConnection connection) {
@@ -51,6 +42,11 @@ public class OpenIdService implements IOpenIdService {
   @Override
   public boolean isConnectionExistAndPending(String id) {
     return pendingConnectionRepo.existsAndActiveById(id);
+  }
+
+  @Override
+  public AcceptedConnection getAcceptedConnection(String id) {
+    return acceptedConnectionRepo.getActiveById(id).orElse(null);
   }
 
   @Override
