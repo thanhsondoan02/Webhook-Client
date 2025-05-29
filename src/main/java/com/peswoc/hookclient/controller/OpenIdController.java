@@ -8,6 +8,8 @@ import com.peswoc.hookclient.dto.request.openid.auth.OpenIdLoginRequestDto;
 import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestDto;
 import com.peswoc.hookclient.dto.request.openid.connect.UpdateConnectionRequestDto;
 import com.peswoc.hookclient.dto.request.openid.sync.SyncRequestDto;
+import com.peswoc.hookclient.dto.request.openid.webhook.RegisterWebhookRequestDto;
+import com.peswoc.hookclient.model.openid.AcceptedConnection;
 import com.peswoc.hookclient.model.openid.PendingConnection;
 import com.peswoc.hookclient.service.*;
 import com.peswoc.hookclient.util.ResponseBuilder;
@@ -124,7 +126,7 @@ public class OpenIdController {
     }
 
     List<SyncScope> scopes = new ArrayList<>();
-    for (var v: request.getScopes()) {
+    for (var v : request.getScopes()) {
       try {
         scopes.add(SyncScope.fromString(v));
       } catch (IllegalArgumentException e) {
@@ -160,5 +162,48 @@ public class OpenIdController {
       }
     }
     return ResponseBuilder.success();
+  }
+
+  @GetMapping("connections/{id}/events")
+  public ResponseEntity<?> getEvents(@PathVariable("id") String connectionId) {
+    var connection = openIdService.getAcceptedConnection(connectionId);
+    if (connection == null) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
+    }
+
+    var url = connection.getTargetDomain() + "/api/events";
+    var token = getToken(connection);
+    return ResponseBuilder.success(apiService.getScopeEvents(url, token));
+  }
+
+  @PostMapping("connections/{id}/webhooks")
+  public ResponseEntity<?> registerWebhook(@PathVariable("id") String connectionId, @RequestBody RegisterWebhookRequestDto body) {
+    var connection = openIdService.getAcceptedConnection(connectionId);
+    if (connection == null) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
+    }
+
+    var url = connection.getTargetDomain() + "/api/webhooks";
+    var token = getToken(connection);
+    return ResponseBuilder.success(apiService.registerWebhook(url, token, body));
+  }
+
+  @GetMapping("connections/{id}/webhooks")
+  public ResponseEntity<?> getWebhooks(@PathVariable("id") String connectionId) {
+    var connection = openIdService.getAcceptedConnection(connectionId);
+    if (connection == null) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
+    }
+
+    var url = connection.getTargetDomain() + "/api/webhooks";
+    var token = getToken(connection);
+    return ResponseBuilder.success(apiService.getWebhooks(url, token));
+  }
+
+  private String getToken(AcceptedConnection connection) {
+    return apiService.getAccessToken(
+      connection.getTargetDomain() + "/api/auth/login-openid",
+      new OpenIdLoginRequestDto(connection.getClientId(), connection.getClientSecret())
+    ).getData().getToken();
   }
 }

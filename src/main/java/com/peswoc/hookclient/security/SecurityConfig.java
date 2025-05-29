@@ -40,7 +40,7 @@ public class SecurityConfig {
           "/api/sync"
         ).permitAll()
         .requestMatchers(HttpMethod.GET, "/api/posts").permitAll()
-        .anyRequest().authenticated()
+        .anyRequest().permitAll()
       )
       .sessionManagement(session -> session
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
