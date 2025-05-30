@@ -15,4 +15,7 @@ public interface AcceptedConnectionRepository extends JpaRepository<AcceptedConn
 
   @Query("SELECT c FROM AcceptedConnection c WHERE c.id = :id AND c.state = 1")
   Optional<AcceptedConnection> getActiveById(@Param("id") String id);
+
+  @Query("SELECT c FROM AcceptedConnection c WHERE c.targetId = :id AND c.state = 1")
+  Optional<AcceptedConnection> getActiveByTargetId(@Param("id") String id);
 }

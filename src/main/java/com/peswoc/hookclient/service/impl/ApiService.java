@@ -3,11 +3,11 @@ package com.peswoc.hookclient.service.impl;
 import com.peswoc.hookclient.dto.request.openid.auth.OpenIdLoginRequestDto;
 import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestDto;
 import com.peswoc.hookclient.dto.request.openid.webhook.RegisterWebhookRequestDto;
-import com.peswoc.hookclient.dto.response.openid.event.ScopeListDto;
 import com.peswoc.hookclient.dto.response.auth.JwtResponseDto;
 import com.peswoc.hookclient.dto.response.base.BaseResponseDto;
 import com.peswoc.hookclient.dto.response.group.GroupListResponseDto;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionDto;
+import com.peswoc.hookclient.dto.response.openid.event.ScopeListDto;
 import com.peswoc.hookclient.dto.response.openid.webhook.WebhookListResponseDto;
 import com.peswoc.hookclient.dto.response.openid.webhook.WebhookResponseDto;
 import com.peswoc.hookclient.dto.response.post.PostListResponseDto;
@@ -88,22 +88,31 @@ public class ApiService implements IApiService {
   @Override
   public ScopeListDto getScopeEvents(String url, String token) {
     var request = new HttpEntity<>(headersFromBearToken(token));
-    return handleCall(url, HttpMethod.GET, request, new ParameterizedTypeReference<>() {});
+    return handleCall(url, HttpMethod.GET, request, new ParameterizedTypeReference<>() {
+    });
   }
 
   @Override
   public WebhookResponseDto registerWebhook(String url, String token, RegisterWebhookRequestDto body) {
     var request = new HttpEntity<>(body, headersFromBearToken(token));
-    return handleCall(url, HttpMethod.POST, request, new ParameterizedTypeReference<>() {});
+    return handleCall(url, HttpMethod.POST, request, new ParameterizedTypeReference<>() {
+    });
   }
 
   @Override
   public WebhookListResponseDto getWebhooks(String url, String token) {
     var request = new HttpEntity<>(headersFromBearToken(token));
-    return handleCall(url, HttpMethod.GET, request, new ParameterizedTypeReference<>() {});
+    return handleCall(url, HttpMethod.GET, request, new ParameterizedTypeReference<>() {
+    });
   }
 
-  private  <T> T handleCall(String url, HttpMethod method, @Nullable HttpEntity<?> requestEntity, ParameterizedTypeReference<BaseResponseDto<T>> responseType) {
+  @Override
+  public void deleteWebhook(String url, String token) {
+    var request = new HttpEntity<>(headersFromBearToken(token));
+    restTemplate.exchange(url, HttpMethod.DELETE, request, String.class);
+  }
+
+  private <T> T handleCall(String url, HttpMethod method, @Nullable HttpEntity<?> requestEntity, ParameterizedTypeReference<BaseResponseDto<T>> responseType) {
     try {
       var response = restTemplate.exchange(url, method, requestEntity, responseType);
       assert response.getBody() != null;

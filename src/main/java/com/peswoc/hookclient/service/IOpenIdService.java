@@ -6,14 +6,14 @@ import com.peswoc.hookclient.dto.response.openid.connect.ConnectionListResponseD
 import com.peswoc.hookclient.model.openid.AcceptedConnection;
 import com.peswoc.hookclient.model.openid.PendingConnection;
 
-import java.util.Optional;
-
 public interface IOpenIdService {
   ConnectionDto savePendingConnection(PendingConnection connection);
 
   boolean isConnectionExistAndPending(String id);
 
   AcceptedConnection getAcceptedConnection(String id);
+
+  AcceptedConnection getConnectionByTargetId(String targetId);
 
   void rejectConnection(String id);
 

@@ -68,4 +68,31 @@ public class UserService implements IUserService {
       .toList();
     userRepository.saveAll(users);
   }
+
+  @Override
+  public void addUser(UserResponseDto data) {
+    if (userRepository.existsAndActiveById(data.getId())) {
+      throw new RuntimeException("User with this ID already exists");
+    } else {
+      userRepository.save(data.toUser());
+    }
+  }
+
+  @Override
+  public void updateUser(UserResponseDto data) {
+    if (userRepository.existsAndActiveById(data.getId())) {
+      userRepository.save(data.toUser());
+    } else {
+      throw new RuntimeException("User not found");
+    }
+  }
+
+  @Override
+  public void deleteUser(String id) {
+    if (userRepository.existsAndActiveById(id)) {
+      userRepository.updateState(id, State.INACTIVE);
+    } else {
+      throw new RuntimeException("User not found");
+    }
+  }
 }

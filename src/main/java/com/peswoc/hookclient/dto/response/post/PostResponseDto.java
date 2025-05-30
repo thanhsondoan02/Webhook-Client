@@ -2,10 +2,12 @@ package com.peswoc.hookclient.dto.response.post;
 
 import com.peswoc.hookclient.model.post.Post;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class PostResponseDto {
   private String id;
   private String title;

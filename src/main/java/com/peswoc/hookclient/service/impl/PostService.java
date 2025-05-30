@@ -5,14 +5,12 @@ import com.peswoc.hookclient.dto.request.post.CreatePostRequestDto;
 import com.peswoc.hookclient.dto.request.post.UpdatePostRequestDto;
 import com.peswoc.hookclient.dto.response.post.PostListResponseDto;
 import com.peswoc.hookclient.dto.response.post.PostResponseDto;
-import com.peswoc.hookclient.dto.response.user.UserResponseDto;
 import com.peswoc.hookclient.model.post.Post;
 import com.peswoc.hookclient.repository.PostRepository;
 import com.peswoc.hookclient.service.IAuthService;
 import com.peswoc.hookclient.service.IPostService;
 import com.peswoc.hookclient.util.ValidationUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -109,5 +107,16 @@ public class PostService implements IPostService {
       .filter(Objects::nonNull)
       .toList();
     postRepository.saveAll(posts);
+  }
+
+  @Override
+  public void addPost(PostResponseDto data) {
+    var postOptional = postRepository.findById(data.getId());
+    if (postOptional.isPresent() && postOptional.get().getState() == State.ACTIVE) {
+      throw new RuntimeException("Post with this ID already exists");
+    } else {
+      postOptional.ifPresent(v -> postRepository.deleteById(v.getId()));
+      postRepository.save(data.toPost());
+    }
   }
 }

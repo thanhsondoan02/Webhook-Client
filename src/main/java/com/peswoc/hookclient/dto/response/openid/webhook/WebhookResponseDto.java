@@ -10,6 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class WebhookResponseDto {
+  private String id;
   private ScopeDto scope;
   private EventDto event;
   private String redirectUrl;

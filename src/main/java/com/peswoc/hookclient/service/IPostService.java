@@ -34,4 +34,6 @@ public interface IPostService {
   List<Post> searchPostByTitleAndUser(String title, String userId);
 
   void syncPosts(PostListResponseDto data);
+
+  void addPost(PostResponseDto data);
 }

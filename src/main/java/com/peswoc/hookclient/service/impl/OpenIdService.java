@@ -9,15 +9,11 @@ import com.peswoc.hookclient.model.openid.BaseConnection;
 import com.peswoc.hookclient.model.openid.PendingConnection;
 import com.peswoc.hookclient.repository.AcceptedConnectionRepository;
 import com.peswoc.hookclient.repository.PendingConnectionRepository;
-import com.peswoc.hookclient.security.JwtUtils;
 import com.peswoc.hookclient.service.IOpenIdService;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OpenIdService implements IOpenIdService {
@@ -47,6 +43,11 @@ public class OpenIdService implements IOpenIdService {
   @Override
   public AcceptedConnection getAcceptedConnection(String id) {
     return acceptedConnectionRepo.getActiveById(id).orElse(null);
+  }
+
+  @Override
+  public AcceptedConnection getConnectionByTargetId(String targetId) {
+    return acceptedConnectionRepo.getActiveByTargetId(targetId).orElse(null);
   }
 
   @Override

@@ -4,10 +4,12 @@ import com.peswoc.hookclient.constant.Gender;
 import com.peswoc.hookclient.constant.Role;
 import com.peswoc.hookclient.model.user.User;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class UserResponseDto {
   private String id;
   private String username;

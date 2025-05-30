@@ -147,4 +147,27 @@ public class GroupService implements IGroupService {
       groupRepository.getActiveUsersInGroup(groupId)
     );
   }
+
+  @Override
+  public void addGroup(GroupResponseDto data) {
+    var group = groupRepository.findById(data.getId());
+    if (group.isPresent() && group.get().getState() == State.ACTIVE) {
+      throw new RuntimeException("Group with this ID already exists");
+    } else {
+      group.ifPresent(v -> groupRepository.deleteById(v.getId()));
+      groupRepository.save(data.toGroup());
+    }
+  }
+
+  @Override
+  public void updateGroup(GroupResponseDto data) {
+    var groupOptional = groupRepository.findById(data.getId());
+    if (groupOptional.isPresent() && groupOptional.get().getState() == State.ACTIVE) {
+      var newGroup = data.toGroup();
+      newGroup.setGroupUsers(groupOptional.get().getGroupUsers());
+      groupRepository.save(newGroup);
+    } else {
+      throw new RuntimeException("Group not found");
+    }
+  }
 }

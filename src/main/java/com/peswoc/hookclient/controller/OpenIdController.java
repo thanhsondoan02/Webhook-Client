@@ -4,11 +4,16 @@ import com.peswoc.hookclient.constant.ConnectionAction;
 import com.peswoc.hookclient.constant.ConnectionStatus;
 import com.peswoc.hookclient.constant.MessageConst;
 import com.peswoc.hookclient.constant.SyncScope;
+import com.peswoc.hookclient.dto.request.group.GroupUserRequestDto;
 import com.peswoc.hookclient.dto.request.openid.auth.OpenIdLoginRequestDto;
 import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestDto;
 import com.peswoc.hookclient.dto.request.openid.connect.UpdateConnectionRequestDto;
 import com.peswoc.hookclient.dto.request.openid.sync.SyncRequestDto;
 import com.peswoc.hookclient.dto.request.openid.webhook.RegisterWebhookRequestDto;
+import com.peswoc.hookclient.dto.request.openid.webhook.WebhookDto;
+import com.peswoc.hookclient.dto.response.group.GroupResponseDto;
+import com.peswoc.hookclient.dto.response.post.PostResponseDto;
+import com.peswoc.hookclient.dto.response.user.UserResponseDto;
 import com.peswoc.hookclient.model.openid.AcceptedConnection;
 import com.peswoc.hookclient.model.openid.PendingConnection;
 import com.peswoc.hookclient.service.*;
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/api")
@@ -198,6 +204,128 @@ public class OpenIdController {
     var url = connection.getTargetDomain() + "/api/webhooks";
     var token = getToken(connection);
     return ResponseBuilder.success(apiService.getWebhooks(url, token));
+  }
+
+  @DeleteMapping("connections/{connectionId}/webhooks/{webhookId}")
+  public ResponseEntity<?> deleteWebhook(
+    @PathVariable("connectionId") String connectionId,
+    @PathVariable("webhookId") String webhookId
+  ) {
+    var connection = openIdService.getAcceptedConnection(connectionId);
+    if (connection == null) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
+    }
+
+    var url = connection.getTargetDomain() + "/api/webhooks/" + webhookId;
+    var token = getToken(connection);
+    apiService.deleteWebhook(url, token);
+    return ResponseBuilder.success();
+  }
+
+  @PostMapping("/webhooks/users/create")
+  public ResponseEntity<?> createUser(@RequestBody() WebhookDto<UserResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      userService.addUser(v);
+      return true;
+    });
+  }
+
+  @PostMapping("/webhooks/users/update")
+  public ResponseEntity<?> updateUser(@RequestBody() WebhookDto<UserResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      userService.updateUser(v);
+      return true;
+    });
+  }
+
+  @PostMapping("/webhooks/users/delete")
+  public ResponseEntity<?> deleteUser(@RequestBody() WebhookDto<UserResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      userService.deleteUser(v.getId());
+      return true;
+    });
+  }
+
+  @PostMapping("/webhooks/posts/create")
+  public ResponseEntity<?> createPost(@RequestBody() WebhookDto<PostResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      postService.addPost(v);
+      return true;
+    });
+  }
+
+  @PostMapping("/webhooks/posts/update")
+  public ResponseEntity<?> updatePost(@RequestBody() WebhookDto<PostResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      postService.updatePost(v.getId(), v.getTitle(), v.getContent());
+      return true;
+    });
+  }
+
+  @PostMapping("/webhooks/posts/delete")
+  public ResponseEntity<?> deletePost(@RequestBody() WebhookDto<PostResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      postService.deletePost(v.getId());
+      return true;
+    });
+  }
+
+  @PostMapping("/webhooks/groups/create")
+  public ResponseEntity<?> createGroup(@RequestBody() WebhookDto<GroupResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      groupService.addGroup(v);
+      return true;
+    });
+  }
+
+  @PostMapping("/webhooks/groups/update")
+  public ResponseEntity<?> updateGroup(@RequestBody() WebhookDto<GroupResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      groupService.updateGroup(v);
+      return true;
+    });
+  }
+
+  @PostMapping("/webhooks/groups/delete")
+  public ResponseEntity<?> deleteGroup(@RequestBody() WebhookDto<GroupResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      groupService.deleteGroup(v.getId());
+      return true;
+    });
+  }
+
+  @PostMapping("/webhooks/group_members/create")
+  public ResponseEntity<?> addGroupMember(@RequestBody() WebhookDto<GroupResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      for (var user : v.getUsers()) {
+        var request = new GroupUserRequestDto(user.getUserId(), user.getRole().toString());
+        groupService.addUserToGroup(v.getId(), request);
+      }
+      return true;
+    });
+  }
+
+
+  @PostMapping("/webhooks/group_members/delete")
+  public ResponseEntity<?> removeGroupMember(@RequestBody() WebhookDto<GroupResponseDto> body) {
+    return handleHookEvent(body, v -> {
+      var users = v.getUsers();
+      for (var user : users) {
+        groupService.removeUserFromGroup(v.getId(), user.getUserId());
+      }
+      return true;
+    });
+  }
+
+  private <T, R> ResponseEntity<?> handleHookEvent(WebhookDto<T> body, Function<T, R> serviceMethod) {
+    var connection = openIdService.getConnectionByTargetId(body.getConnectionId());
+    if (connection == null) {
+      return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
+    }
+
+    serviceMethod.apply(body.getData());
+
+    return ResponseBuilder.success();
   }
 
   private String getToken(AcceptedConnection connection) {

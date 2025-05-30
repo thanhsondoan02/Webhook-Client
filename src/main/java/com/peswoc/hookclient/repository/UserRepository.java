@@ -2,7 +2,9 @@ package com.peswoc.hookclient.repository;
 
 import com.peswoc.hookclient.constant.State;
 import com.peswoc.hookclient.model.user.User;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,4 +28,9 @@ public interface UserRepository extends JpaRepository<User, String> {
 
   @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.id = :id AND u.state = 1")
   boolean existsAndActiveById(@Param("id") String id);
+
+  @Transactional
+  @Modifying
+  @Query("UPDATE User u SET u.state = :state WHERE u.id = :id")
+  void updateState(@Param("id") String id, @Param("state") State state);
 }

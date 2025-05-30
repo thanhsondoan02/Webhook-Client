@@ -3,11 +3,11 @@ package com.peswoc.hookclient.service;
 import com.peswoc.hookclient.dto.request.openid.auth.OpenIdLoginRequestDto;
 import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestDto;
 import com.peswoc.hookclient.dto.request.openid.webhook.RegisterWebhookRequestDto;
-import com.peswoc.hookclient.dto.response.openid.event.ScopeListDto;
 import com.peswoc.hookclient.dto.response.auth.JwtResponseDto;
 import com.peswoc.hookclient.dto.response.base.BaseResponseDto;
 import com.peswoc.hookclient.dto.response.group.GroupListResponseDto;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionDto;
+import com.peswoc.hookclient.dto.response.openid.event.ScopeListDto;
 import com.peswoc.hookclient.dto.response.openid.webhook.WebhookListResponseDto;
 import com.peswoc.hookclient.dto.response.openid.webhook.WebhookResponseDto;
 import com.peswoc.hookclient.dto.response.post.PostListResponseDto;
@@ -29,4 +29,6 @@ public interface IApiService {
   WebhookResponseDto registerWebhook(String url, String token, RegisterWebhookRequestDto body);
 
   WebhookListResponseDto getWebhooks(String url, String token);
+
+  void deleteWebhook(String url, String token);
 }
