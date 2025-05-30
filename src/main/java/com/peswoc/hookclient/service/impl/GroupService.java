@@ -15,6 +15,7 @@ import com.peswoc.hookclient.service.IGroupService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Service
 public class GroupService implements IGroupService {
@@ -47,6 +48,15 @@ public class GroupService implements IGroupService {
       savedGroup.getThumbnail(),
       savedGroup.getGroupUsers()
     );
+  }
+
+  @Override
+  public void syncGroups(GroupListResponseDto data) {
+    var groups = data.getGroups().stream()
+      .map(GroupResponseDto::toGroup)
+      .filter(Objects::nonNull)
+      .toList();
+    groupRepository.saveAll(groups);
   }
 
   @Override
@@ -136,5 +146,28 @@ public class GroupService implements IGroupService {
       group.getThumbnail(),
       groupRepository.getActiveUsersInGroup(groupId)
     );
+  }
+
+  @Override
+  public void addGroup(GroupResponseDto data) {
+    var group = groupRepository.findById(data.getId());
+    if (group.isPresent() && group.get().getState() == State.ACTIVE) {
+      throw new RuntimeException("Group with this ID already exists");
+    } else {
+      group.ifPresent(v -> groupRepository.deleteById(v.getId()));
+      groupRepository.save(data.toGroup());
+    }
+  }
+
+  @Override
+  public void updateGroup(GroupResponseDto data) {
+    var groupOptional = groupRepository.findById(data.getId());
+    if (groupOptional.isPresent() && groupOptional.get().getState() == State.ACTIVE) {
+      var newGroup = data.toGroup();
+      newGroup.setGroupUsers(groupOptional.get().getGroupUsers());
+      groupRepository.save(newGroup);
+    } else {
+      throw new RuntimeException("Group not found");
+    }
   }
 }

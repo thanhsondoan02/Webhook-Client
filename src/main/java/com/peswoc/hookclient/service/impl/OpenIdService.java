@@ -9,10 +9,7 @@ import com.peswoc.hookclient.model.openid.BaseConnection;
 import com.peswoc.hookclient.model.openid.PendingConnection;
 import com.peswoc.hookclient.repository.AcceptedConnectionRepository;
 import com.peswoc.hookclient.repository.PendingConnectionRepository;
-import com.peswoc.hookclient.security.JwtUtils;
 import com.peswoc.hookclient.service.IOpenIdService;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,24 +20,14 @@ public class OpenIdService implements IOpenIdService {
 
   private final AcceptedConnectionRepository acceptedConnectionRepo;
   private final PendingConnectionRepository pendingConnectionRepo;
-  private final AuthenticationManager authenticationManager;
-  private final JwtUtils jwtUtils;
-  private final PasswordEncoder passwordEncoder;
 
   public OpenIdService(
     AcceptedConnectionRepository acceptedConnectionRepo,
-    PendingConnectionRepository pendingConnectionRepo,
-    AuthenticationManager authenticationManager,
-    JwtUtils jwtUtils,
-    PasswordEncoder passwordEncoder
+    PendingConnectionRepository pendingConnectionRepo
   ) {
     this.acceptedConnectionRepo = acceptedConnectionRepo;
     this.pendingConnectionRepo = pendingConnectionRepo;
-    this.authenticationManager = authenticationManager;
-    this.jwtUtils = jwtUtils;
-    this.passwordEncoder = passwordEncoder;
   }
-
 
   @Override
   public ConnectionDto savePendingConnection(PendingConnection connection) {
@@ -51,6 +38,16 @@ public class OpenIdService implements IOpenIdService {
   @Override
   public boolean isConnectionExistAndPending(String id) {
     return pendingConnectionRepo.existsAndActiveById(id);
+  }
+
+  @Override
+  public AcceptedConnection getAcceptedConnection(String id) {
+    return acceptedConnectionRepo.getActiveById(id).orElse(null);
+  }
+
+  @Override
+  public AcceptedConnection getConnectionByTargetId(String targetId) {
+    return acceptedConnectionRepo.getActiveByTargetId(targetId).orElse(null);
   }
 
   @Override

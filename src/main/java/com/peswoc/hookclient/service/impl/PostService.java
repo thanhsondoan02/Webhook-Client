@@ -3,6 +3,7 @@ package com.peswoc.hookclient.service.impl;
 import com.peswoc.hookclient.constant.State;
 import com.peswoc.hookclient.dto.request.post.CreatePostRequestDto;
 import com.peswoc.hookclient.dto.request.post.UpdatePostRequestDto;
+import com.peswoc.hookclient.dto.response.post.PostListResponseDto;
 import com.peswoc.hookclient.dto.response.post.PostResponseDto;
 import com.peswoc.hookclient.model.post.Post;
 import com.peswoc.hookclient.repository.PostRepository;
@@ -12,6 +13,7 @@ import com.peswoc.hookclient.util.ValidationUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class PostService implements IPostService {
@@ -96,5 +98,25 @@ public class PostService implements IPostService {
   @Override
   public List<Post> searchPostByTitleAndUser(String title, String userId) {
     return postRepository.findByTitleAndUserId(title, userId);
+  }
+
+  @Override
+  public void syncPosts(PostListResponseDto data) {
+    var posts = data.getPosts().stream()
+      .map(PostResponseDto::toPost)
+      .filter(Objects::nonNull)
+      .toList();
+    postRepository.saveAll(posts);
+  }
+
+  @Override
+  public void addPost(PostResponseDto data) {
+    var postOptional = postRepository.findById(data.getId());
+    if (postOptional.isPresent() && postOptional.get().getState() == State.ACTIVE) {
+      throw new RuntimeException("Post with this ID already exists");
+    } else {
+      postOptional.ifPresent(v -> postRepository.deleteById(v.getId()));
+      postRepository.save(data.toPost());
+    }
   }
 }

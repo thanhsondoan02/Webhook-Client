@@ -2,12 +2,14 @@ package com.peswoc.hookclient.service.impl;
 
 import com.peswoc.hookclient.constant.State;
 import com.peswoc.hookclient.dto.response.user.UserListResponseDto;
+import com.peswoc.hookclient.dto.response.user.UserResponseDto;
 import com.peswoc.hookclient.model.user.User;
 import com.peswoc.hookclient.repository.UserRepository;
 import com.peswoc.hookclient.service.IUserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UserService implements IUserService {
@@ -56,5 +58,41 @@ public class UserService implements IUserService {
   @Override
   public boolean isUserIdExistAndActive(String id) {
     return userRepository.existsAndActiveById(id);
+  }
+
+  @Override
+  public void syncUsers(UserListResponseDto data) {
+    var users = data.getUsers().stream()
+      .map(UserResponseDto::toUser)
+      .filter(Objects::nonNull)
+      .toList();
+    userRepository.saveAll(users);
+  }
+
+  @Override
+  public void addUser(UserResponseDto data) {
+    if (userRepository.existsAndActiveById(data.getId())) {
+      throw new RuntimeException("User with this ID already exists");
+    } else {
+      userRepository.save(data.toUser());
+    }
+  }
+
+  @Override
+  public void updateUser(UserResponseDto data) {
+    if (userRepository.existsAndActiveById(data.getId())) {
+      userRepository.save(data.toUser());
+    } else {
+      throw new RuntimeException("User not found");
+    }
+  }
+
+  @Override
+  public void deleteUser(String id) {
+    if (userRepository.existsAndActiveById(id)) {
+      userRepository.updateState(id, State.INACTIVE);
+    } else {
+      throw new RuntimeException("User not found");
+    }
   }
 }

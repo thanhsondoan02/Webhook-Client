@@ -2,6 +2,7 @@ package com.peswoc.hookclient.service;
 
 import com.peswoc.hookclient.dto.request.post.CreatePostRequestDto;
 import com.peswoc.hookclient.dto.request.post.UpdatePostRequestDto;
+import com.peswoc.hookclient.dto.response.post.PostListResponseDto;
 import com.peswoc.hookclient.dto.response.post.PostResponseDto;
 import com.peswoc.hookclient.model.post.Post;
 
@@ -31,4 +32,8 @@ public interface IPostService {
   List<Post> searchPostByUser(String userId);
 
   List<Post> searchPostByTitleAndUser(String title, String userId);
+
+  void syncPosts(PostListResponseDto data);
+
+  void addPost(PostResponseDto data);
 }

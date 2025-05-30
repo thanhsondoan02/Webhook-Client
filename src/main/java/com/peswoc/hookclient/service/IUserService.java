@@ -1,6 +1,7 @@
 package com.peswoc.hookclient.service;
 
 import com.peswoc.hookclient.dto.response.user.UserListResponseDto;
+import com.peswoc.hookclient.dto.response.user.UserResponseDto;
 import com.peswoc.hookclient.model.user.User;
 import org.springframework.stereotype.Service;
 
@@ -21,4 +22,12 @@ public interface IUserService {
   boolean isUserIdExist(String id);
 
   boolean isUserIdExistAndActive(String id);
+
+  void syncUsers(UserListResponseDto data);
+
+  void addUser(UserResponseDto data);
+
+  void updateUser(UserResponseDto data);
+
+  void deleteUser(String id);
 }

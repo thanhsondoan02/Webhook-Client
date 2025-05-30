@@ -30,6 +30,7 @@ public class AcceptedConnection extends BaseConnection {
     this.name = connection.getName();
     this.domain = connection.getDomain();
     this.targetDomain = connection.getTargetDomain();
+    this.targetId = connection.getTargetId();
     this.callbackUrl = connection.getCallbackUrl();
   }
 }
