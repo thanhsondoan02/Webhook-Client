@@ -4,9 +4,12 @@ import com.peswoc.hookclient.constant.ConnectionStatus;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionDto;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionListResponseDto;
 import com.peswoc.hookclient.model.openid.Connection;
+import com.peswoc.hookclient.model.openid.Server;
 
 public interface IOpenIdService {
-  ConnectionDto savePendingConnection(Connection connection);
+  String getOwnerDomain();
+
+  ConnectionDto savePendingConnection(Server server, Connection connection);
 
   boolean isConnectionExistAndPending(String id);
 

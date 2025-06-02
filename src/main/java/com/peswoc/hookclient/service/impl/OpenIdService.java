@@ -4,7 +4,9 @@ import com.peswoc.hookclient.constant.ConnectionStatus;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionDto;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionListResponseDto;
 import com.peswoc.hookclient.model.openid.Connection;
+import com.peswoc.hookclient.model.openid.Server;
 import com.peswoc.hookclient.repository.ConnectionRepository;
+import com.peswoc.hookclient.repository.ServerRepository;
 import com.peswoc.hookclient.service.IOpenIdService;
 import org.springframework.stereotype.Service;
 
@@ -14,13 +16,25 @@ import java.util.ArrayList;
 public class OpenIdService implements IOpenIdService {
 
   private final ConnectionRepository connectionRepository;
+  private final ServerRepository serverRepository;
 
-  public OpenIdService(ConnectionRepository connectionRepository) {
+  public OpenIdService(ConnectionRepository connectionRepository, ServerRepository serverRepository) {
     this.connectionRepository = connectionRepository;
+    this.serverRepository = serverRepository;
   }
 
   @Override
-  public ConnectionDto savePendingConnection(Connection connection) {
+  public String getOwnerDomain() {
+    return serverRepository
+      .findOwnerServer()
+      .orElseThrow(() -> new RuntimeException("Owner server not found"))
+      .getDomain();
+  }
+
+  @Override
+  public ConnectionDto savePendingConnection(Server server, Connection connection) {
+    var savedServer = serverRepository.save(server);
+    connection.setTargetServer(savedServer);
     var savedConnection = connectionRepository.save(connection);
     return new ConnectionDto(savedConnection);
   }

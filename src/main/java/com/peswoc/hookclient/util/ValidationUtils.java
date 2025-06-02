@@ -85,6 +85,10 @@ public class ValidationUtils {
     }
   }
 
+  public static boolean isValidServerName(String name) {
+    return name != null && name.length() >= 5 && name.length() <= 20;
+  }
+
   public static boolean isValidCallbackUrl(String domain, String callbackUrl) {
     if (domain == null || callbackUrl == null) return false;
     try {

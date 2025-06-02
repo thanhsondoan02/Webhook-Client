@@ -1,7 +1,7 @@
 package com.peswoc.hookclient.service;
 
 import com.peswoc.hookclient.dto.request.openid.auth.OpenIdLoginRequestDto;
-import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestDto;
+import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestToServerDto;
 import com.peswoc.hookclient.dto.request.openid.webhook.RegisterWebhookRequestDto;
 import com.peswoc.hookclient.dto.response.auth.JwtResponseDto;
 import com.peswoc.hookclient.dto.response.base.BaseResponseDto;
@@ -14,7 +14,7 @@ import com.peswoc.hookclient.dto.response.post.PostListResponseDto;
 import com.peswoc.hookclient.dto.response.user.UserListResponseDto;
 
 public interface IApiService {
-  BaseResponseDto<ConnectionDto> registerConnection(String url, ConnectRequestDto body);
+  BaseResponseDto<ConnectionDto> registerConnection(String url, ConnectRequestToServerDto body);
 
   BaseResponseDto<JwtResponseDto> getAccessToken(String url, OpenIdLoginRequestDto body);
 

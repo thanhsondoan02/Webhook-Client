@@ -1,7 +1,7 @@
 package com.peswoc.hookclient.service.impl;
 
 import com.peswoc.hookclient.dto.request.openid.auth.OpenIdLoginRequestDto;
-import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestDto;
+import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestToServerDto;
 import com.peswoc.hookclient.dto.request.openid.webhook.RegisterWebhookRequestDto;
 import com.peswoc.hookclient.dto.response.auth.JwtResponseDto;
 import com.peswoc.hookclient.dto.response.base.BaseResponseDto;
@@ -31,7 +31,7 @@ public class ApiService implements IApiService {
   }
 
   @Override
-  public BaseResponseDto<ConnectionDto> registerConnection(String url, ConnectRequestDto body) {
+  public BaseResponseDto<ConnectionDto> registerConnection(String url, ConnectRequestToServerDto body) {
     var request = new HttpEntity<>(body);
     var response = restTemplate.exchange(
       url, HttpMethod.POST, request,

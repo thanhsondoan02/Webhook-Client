@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum ServerOwner {
-  OWN(0),
-  EXTERNAL(1);
+  OWN(1),
+  EXTERNAL(0);
 
   private final int code;
 

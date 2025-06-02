@@ -10,7 +10,7 @@ import java.util.Objects;
 public enum ConnectionStatus {
   PENDING(0),
   ACCEPTED(1),
-  REJECTED(2);
+  REJECTED(-1);
 
   private final int code;
 

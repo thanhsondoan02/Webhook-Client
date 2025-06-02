@@ -6,7 +6,8 @@ import com.peswoc.hookclient.constant.MessageConst;
 import com.peswoc.hookclient.constant.SyncScope;
 import com.peswoc.hookclient.dto.request.group.GroupUserRequestDto;
 import com.peswoc.hookclient.dto.request.openid.auth.OpenIdLoginRequestDto;
-import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestDto;
+import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestFromClientDto;
+import com.peswoc.hookclient.dto.request.openid.connect.ConnectRequestToServerDto;
 import com.peswoc.hookclient.dto.request.openid.connect.UpdateConnectionRequestDto;
 import com.peswoc.hookclient.dto.request.openid.sync.SyncRequestDto;
 import com.peswoc.hookclient.dto.request.openid.webhook.RegisterWebhookRequestDto;
@@ -52,38 +53,35 @@ public class OpenIdController {
   }
 
   @PostMapping("/connections")
-  public ResponseEntity<?> requestConnect(@RequestBody ConnectRequestDto request) {
-    var name = request.getName();
-    if (name == null || name.isBlank()
-      || !ValidationUtils.isValidDomain(request.getDomain())
+  public ResponseEntity<?> requestConnect(@RequestBody ConnectRequestFromClientDto request) {
+    if (!ValidationUtils.isValidServerName(request.getName())
+      || !ValidationUtils.isValidServerName(request.getTargetName())
       || !ValidationUtils.isValidDomain(request.getTargetDomain())) {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.BAD_REQUEST);
     }
 
-    // Set callback URL base on the id of the connection
-    var apiRequest = new ConnectRequestDto();
-    var id = UUID.randomUUID().toString().replace("-", "");
-    apiRequest.setName(name);
-    apiRequest.setId(id);
-    apiRequest.setDomain(request.getDomain());
-    apiRequest.setCallbackUrl(request.getDomain() + "/api/connections/" + id);
-
     // Call to server B to register new connection
+    var apiRequest = new ConnectRequestToServerDto();
+    var connectionId = UUID.randomUUID().toString().replace("-", "");
+    var ownerDomain = openIdService.getOwnerDomain();
+    apiRequest.setName(request.getName());
+    apiRequest.setId(connectionId);
+    apiRequest.setDomain(ownerDomain);
+    apiRequest.setCallbackUrl(ownerDomain + "/api/connections/" + connectionId);
+
     var response = apiService.registerConnection(request.getTargetDomain() + "/api/connections", apiRequest);
     if (!response.isSuccess()) {
       return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.getMessage());
     }
 
     // Save the new connection to the database
-    var server = new Server(request.getName(), request.getTargetDomain());
-
+    var server = new Server(request.getTargetName(), request.getTargetDomain());
     var newConnection = new Connection();
-    newConnection.setId(id);
-    newConnection.setTargetServer(server);
-    newConnection.setCallbackUrl(request.getCallbackUrl());
+    newConnection.setId(connectionId);
+    newConnection.setCallbackUrl(apiRequest.getCallbackUrl());
     newConnection.setStatus(ConnectionStatus.PENDING);
 
-    var connectionDto = openIdService.savePendingConnection(newConnection);
+    var connectionDto = openIdService.savePendingConnection(server, newConnection);
 
     return ResponseBuilder.success(connectionDto);
   }
