@@ -1,100 +1,74 @@
 package com.peswoc.hookclient.service.impl;
 
 import com.peswoc.hookclient.constant.ConnectionStatus;
-import com.peswoc.hookclient.constant.State;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionDto;
 import com.peswoc.hookclient.dto.response.openid.connect.ConnectionListResponseDto;
-import com.peswoc.hookclient.model.openid.AcceptedConnection;
-import com.peswoc.hookclient.model.openid.BaseConnection;
-import com.peswoc.hookclient.model.openid.PendingConnection;
-import com.peswoc.hookclient.repository.AcceptedConnectionRepository;
-import com.peswoc.hookclient.repository.PendingConnectionRepository;
+import com.peswoc.hookclient.model.openid.Connection;
+import com.peswoc.hookclient.repository.ConnectionRepository;
 import com.peswoc.hookclient.service.IOpenIdService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class OpenIdService implements IOpenIdService {
 
-  private final AcceptedConnectionRepository acceptedConnectionRepo;
-  private final PendingConnectionRepository pendingConnectionRepo;
+  private final ConnectionRepository connectionRepository;
 
-  public OpenIdService(
-    AcceptedConnectionRepository acceptedConnectionRepo,
-    PendingConnectionRepository pendingConnectionRepo
-  ) {
-    this.acceptedConnectionRepo = acceptedConnectionRepo;
-    this.pendingConnectionRepo = pendingConnectionRepo;
+  public OpenIdService(ConnectionRepository connectionRepository) {
+    this.connectionRepository = connectionRepository;
   }
 
   @Override
-  public ConnectionDto savePendingConnection(PendingConnection connection) {
-    var savedConnection = pendingConnectionRepo.save(connection);
+  public ConnectionDto savePendingConnection(Connection connection) {
+    var savedConnection = connectionRepository.save(connection);
     return new ConnectionDto(savedConnection);
   }
 
   @Override
   public boolean isConnectionExistAndPending(String id) {
-    return pendingConnectionRepo.existsAndActiveById(id);
+    var optional = connectionRepository.findActiveByIdAndStatus(id, ConnectionStatus.PENDING);
+    return optional.isPresent();
   }
 
   @Override
-  public AcceptedConnection getAcceptedConnection(String id) {
-    return acceptedConnectionRepo.getActiveById(id).orElse(null);
-  }
-
-  @Override
-  public AcceptedConnection getConnectionByTargetId(String targetId) {
-    return acceptedConnectionRepo.getActiveByTargetId(targetId).orElse(null);
+  public Connection getAcceptedConnection(String id) {
+    return connectionRepository.findActiveByIdAndStatus(id, ConnectionStatus.ACCEPTED).orElse(null);
   }
 
   @Override
   public void rejectConnection(String id) {
-    pendingConnectionRepo.updateState(id, State.INACTIVE);
+    var connection = connectionRepository.findActiveByIdAndStatus(id, ConnectionStatus.PENDING)
+      .orElseThrow(() -> new RuntimeException("Connection not found or already processed"));
+    connection.setStatus(ConnectionStatus.REJECTED);
+    connectionRepository.save(connection);
   }
 
   @Override
   public ConnectionDto acceptConnection(String id, String clientId, String clientSecret) {
-    var pendingConnection = pendingConnectionRepo.findByIdAndState(id, State.ACTIVE)
+    var connection = connectionRepository.findActiveByIdAndStatus(id, ConnectionStatus.PENDING)
       .orElseThrow(() -> new RuntimeException("Group not found"));
 
-    var newConnection = new AcceptedConnection(pendingConnection);
-    newConnection.setClientId(clientId);
-    newConnection.setClientSecret(clientSecret);
+    connection.setClientId(clientId);
+    connection.setClientSecret(clientSecret);
+    connection.setStatus(ConnectionStatus.ACCEPTED);
 
-    // Save new connection and delete pending connection
-    var saved = acceptedConnectionRepo.save(newConnection);
-    pendingConnectionRepo.deleteById(pendingConnection.getId());
+    var saved = connectionRepository.save(connection);
 
-    var res = new ConnectionDto(saved);
-    res.setClientSecret(clientSecret);
-    return res;
+    return new ConnectionDto(saved);
   }
 
   @Override
-  public ConnectionListResponseDto getConnections(ConnectionStatus status) {
-    if (status != null) {
-      switch (status) {
-        case PENDING -> {
-          var connectionList = pendingConnectionRepo.findAllByState(State.ACTIVE);
-          return new ConnectionListResponseDto(new ArrayList<>(connectionList));
-        }
-        case ACCEPTED -> {
-          var connectionList = acceptedConnectionRepo.findAllByState(State.ACTIVE);
-          return new ConnectionListResponseDto(new ArrayList<>(connectionList));
-        }
-        case REJECTED -> {
-          var connectionList = pendingConnectionRepo.findAllByState(State.INACTIVE);
-          return new ConnectionListResponseDto(new ArrayList<>(connectionList));
-        }
-      }
-    }
-    List<BaseConnection> connectionList = new ArrayList<>();
-    connectionList.addAll(acceptedConnectionRepo.findAllByState(State.ACTIVE));
-    connectionList.addAll(pendingConnectionRepo.findAllByState(State.ACTIVE));
-    connectionList.addAll(pendingConnectionRepo.findAllByState(State.INACTIVE));
+  public ConnectionListResponseDto getFilteredConnections(ConnectionStatus status) {
+    return new ConnectionListResponseDto(connectionRepository.findActiveByStatus(status));
+  }
+
+  @Override
+  public ConnectionListResponseDto getAllConnections() {
+    var connectionList = new ArrayList<Connection>();
+    connectionList.addAll(connectionRepository.findActiveByStatus(ConnectionStatus.PENDING));
+    connectionList.addAll(connectionRepository.findActiveByStatus(ConnectionStatus.ACCEPTED));
+    connectionList.addAll(connectionRepository.findActiveByStatus(ConnectionStatus.REJECTED));
     return new ConnectionListResponseDto(connectionList);
   }
 }

@@ -1,7 +1,7 @@
 package com.peswoc.hookclient.model.group;
 
 import com.peswoc.hookclient.constant.GroupRole;
-import com.peswoc.hookclient.model.base.BaseSqlEntity;
+import com.peswoc.hookclient.model.base.MultiSourceEntity;
 import com.peswoc.hookclient.model.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -23,7 +23,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class GroupUser extends BaseSqlEntity {
+public class GroupUser extends MultiSourceEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "group_id", nullable = false)

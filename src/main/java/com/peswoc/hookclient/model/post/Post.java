@@ -25,6 +25,9 @@ public class Post extends BaseMongoEntity {
   @Indexed
   private String userId;
 
+  @Field("from_server_id")
+  private String fromServerId;
+
   public Post(String title, String content, String userId) {
     super();
     this.title = title;

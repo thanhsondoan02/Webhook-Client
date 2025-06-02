@@ -2,7 +2,7 @@ package com.peswoc.hookclient.model.user;
 
 import com.peswoc.hookclient.constant.Gender;
 import com.peswoc.hookclient.constant.Role;
-import com.peswoc.hookclient.model.base.BaseSqlEntity;
+import com.peswoc.hookclient.model.base.MultiSourceEntity;
 import com.peswoc.hookclient.util.convert.RoleConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -18,7 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class User extends BaseSqlEntity {
+public class User extends MultiSourceEntity {
 
   @NotNull
   @Column(name = "username", length = 50, nullable = false, unique = true)
@@ -28,7 +28,7 @@ public class User extends BaseSqlEntity {
   @Column(name = "email", length = 100, nullable = false, unique = true)
   private String email;
 
-  @Column(name = "password_hash", length = 255)
+  @Column(name = "password_hash")
   private String passwordHash;
 
   @Column(name = "full_name", length = 100)

@@ -1,6 +1,6 @@
 package com.peswoc.hookclient.model.group;
 
-import com.peswoc.hookclient.model.base.BaseSqlEntity;
+import com.peswoc.hookclient.model.base.MultiSourceEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Group extends BaseSqlEntity {
+public class Group extends MultiSourceEntity {
 
   @NotNull
   @Column(name = "name", length = 50, nullable = false)

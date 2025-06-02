@@ -14,8 +14,8 @@ import com.peswoc.hookclient.dto.request.openid.webhook.WebhookDto;
 import com.peswoc.hookclient.dto.response.group.GroupResponseDto;
 import com.peswoc.hookclient.dto.response.post.PostResponseDto;
 import com.peswoc.hookclient.dto.response.user.UserResponseDto;
-import com.peswoc.hookclient.model.openid.AcceptedConnection;
-import com.peswoc.hookclient.model.openid.PendingConnection;
+import com.peswoc.hookclient.model.openid.Connection;
+import com.peswoc.hookclient.model.openid.Server;
 import com.peswoc.hookclient.service.*;
 import com.peswoc.hookclient.util.ResponseBuilder;
 import com.peswoc.hookclient.util.ValidationUtils;
@@ -61,23 +61,27 @@ public class OpenIdController {
     }
 
     // Set callback URL base on the id of the connection
+    var apiRequest = new ConnectRequestDto();
     var id = UUID.randomUUID().toString().replace("-", "");
-    request.setCallbackUrl(request.getDomain() + "/api/connections/" + id);
+    apiRequest.setName(name);
+    apiRequest.setId(id);
+    apiRequest.setDomain(request.getDomain());
+    apiRequest.setCallbackUrl(request.getDomain() + "/api/connections/" + id);
 
     // Call to server B to register new connection
-    var response = apiService.registerConnection(request.getTargetDomain() + "/api/connections", request);
+    var response = apiService.registerConnection(request.getTargetDomain() + "/api/connections", apiRequest);
     if (!response.isSuccess()) {
       return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.getMessage());
     }
 
     // Save the new connection to the database
-    var newConnection = new PendingConnection();
+    var server = new Server(request.getName(), request.getTargetDomain());
+
+    var newConnection = new Connection();
     newConnection.setId(id);
-    newConnection.setName(request.getName());
-    newConnection.setDomain(request.getDomain());
+    newConnection.setTargetServer(server);
     newConnection.setCallbackUrl(request.getCallbackUrl());
-    newConnection.setTargetDomain(request.getTargetDomain());
-    newConnection.setTargetId(response.getData().getId());
+    newConnection.setStatus(ConnectionStatus.PENDING);
 
     var connectionDto = openIdService.savePendingConnection(newConnection);
 
@@ -86,18 +90,15 @@ public class OpenIdController {
 
   @GetMapping("/connections")
   public ResponseEntity<?> getConnections(@RequestParam(required = false) String status) {
-    ConnectionStatus connectionStatus;
-    if (status != null) {
+    if (status == null) {
+      return ResponseBuilder.success(openIdService.getAllConnections());
+    } else {
       try {
-        connectionStatus = ConnectionStatus.fromString(status);
+        return ResponseBuilder.success(openIdService.getFilteredConnections(ConnectionStatus.fromString(status)));
       } catch (IllegalArgumentException e) {
         return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.BAD_REQUEST);
       }
-    } else {
-      connectionStatus = null;
     }
-
-    return ResponseBuilder.success(openIdService.getConnections(connectionStatus));
   }
 
   @PostMapping("/connections/{id}")
@@ -145,7 +146,7 @@ public class OpenIdController {
       return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
     }
 
-    var domainB = connection.getTargetDomain();
+    var domainB = connection.getTargetServer().getDomain();
     var accessToken = apiService.getAccessToken(
       domainB + "/api/auth/login-openid",
       new OpenIdLoginRequestDto(connection.getClientId(), connection.getClientSecret())
@@ -177,7 +178,7 @@ public class OpenIdController {
       return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
     }
 
-    var url = connection.getTargetDomain() + "/api/events";
+    var url = connection.getTargetServer().getDomain() + "/api/events";
     var token = getToken(connection);
     return ResponseBuilder.success(apiService.getScopeEvents(url, token));
   }
@@ -189,7 +190,7 @@ public class OpenIdController {
       return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
     }
 
-    var url = connection.getTargetDomain() + "/api/webhooks";
+    var url = connection.getTargetServer().getDomain() + "/api/webhooks";
     var token = getToken(connection);
     return ResponseBuilder.success(apiService.registerWebhook(url, token, body));
   }
@@ -201,7 +202,7 @@ public class OpenIdController {
       return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
     }
 
-    var url = connection.getTargetDomain() + "/api/webhooks";
+    var url = connection.getTargetServer().getDomain() + "/api/webhooks";
     var token = getToken(connection);
     return ResponseBuilder.success(apiService.getWebhooks(url, token));
   }
@@ -216,7 +217,7 @@ public class OpenIdController {
       return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
     }
 
-    var url = connection.getTargetDomain() + "/api/webhooks/" + webhookId;
+    var url = connection.getTargetServer().getDomain() + "/api/webhooks/" + webhookId;
     var token = getToken(connection);
     apiService.deleteWebhook(url, token);
     return ResponseBuilder.success();
@@ -305,7 +306,6 @@ public class OpenIdController {
     });
   }
 
-
   @PostMapping("/webhooks/group_members/delete")
   public ResponseEntity<?> removeGroupMember(@RequestBody() WebhookDto<GroupResponseDto> body) {
     return handleHookEvent(body, v -> {
@@ -318,7 +318,7 @@ public class OpenIdController {
   }
 
   private <T, R> ResponseEntity<?> handleHookEvent(WebhookDto<T> body, Function<T, R> serviceMethod) {
-    var connection = openIdService.getConnectionByTargetId(body.getConnectionId());
+    var connection = openIdService.getAcceptedConnection(body.getConnectionId());
     if (connection == null) {
       return ResponseBuilder.error(HttpStatus.NOT_FOUND.value(), MessageConst.CONNECTION_NOT_FOUND);
     }
@@ -328,9 +328,9 @@ public class OpenIdController {
     return ResponseBuilder.success();
   }
 
-  private String getToken(AcceptedConnection connection) {
+  private String getToken(Connection connection) {
     return apiService.getAccessToken(
-      connection.getTargetDomain() + "/api/auth/login-openid",
+      connection.getTargetServer().getDomain() + "/api/auth/login-openid",
       new OpenIdLoginRequestDto(connection.getClientId(), connection.getClientSecret())
     ).getData().getToken();
   }
