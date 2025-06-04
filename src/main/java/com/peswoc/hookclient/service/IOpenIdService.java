@@ -9,7 +9,7 @@ import com.peswoc.hookclient.model.openid.Server;
 public interface IOpenIdService {
   String getOwnerDomain();
 
-  ConnectionDto savePendingConnection(Server server, Connection connection);
+  ConnectionDto addPendingConnection(Server server, Connection connection);
 
   boolean isConnectionExistAndPending(String id);
 

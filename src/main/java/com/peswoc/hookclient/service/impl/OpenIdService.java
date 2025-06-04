@@ -32,11 +32,13 @@ public class OpenIdService implements IOpenIdService {
   }
 
   @Override
-  public ConnectionDto savePendingConnection(Server server, Connection connection) {
-    var savedServer = serverRepository.save(server);
+  public ConnectionDto addPendingConnection(Server server, Connection connection) {
+    var savedServer = serverRepository
+      .findByDomain(server.getDomain())
+      .orElseGet(() -> serverRepository.save(server));
+
     connection.setTargetServer(savedServer);
-    var savedConnection = connectionRepository.save(connection);
-    return new ConnectionDto(savedConnection);
+    return new ConnectionDto(connectionRepository.save(connection));
   }
 
   @Override

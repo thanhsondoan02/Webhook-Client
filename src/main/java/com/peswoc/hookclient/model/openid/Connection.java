@@ -19,6 +19,9 @@ public class Connection extends BaseSqlEntity {
   @JoinColumn(name = "target_server_id", nullable = false)
   private Server targetServer;
 
+  @Column(name = "name", length = 100, nullable = false)
+  protected String name;
+
   @Column(name = "callback_url", nullable = false)
   protected String callbackUrl;
 

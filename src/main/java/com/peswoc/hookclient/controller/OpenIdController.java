@@ -55,8 +55,7 @@ public class OpenIdController {
   @PostMapping("/connections")
   public ResponseEntity<?> requestConnect(@RequestBody ConnectRequestFromClientDto request) {
     if (!ValidationUtils.isValidServerName(request.getName())
-      || !ValidationUtils.isValidServerName(request.getTargetName())
-      || !ValidationUtils.isValidDomain(request.getTargetDomain())) {
+      || !ValidationUtils.isValidDomain(request.getDomain())) {
       return ResponseBuilder.error(HttpStatus.BAD_REQUEST.value(), MessageConst.BAD_REQUEST);
     }
 
@@ -69,19 +68,20 @@ public class OpenIdController {
     apiRequest.setDomain(ownerDomain);
     apiRequest.setCallbackUrl(ownerDomain + "/api/connections/" + connectionId);
 
-    var response = apiService.registerConnection(request.getTargetDomain() + "/api/connections", apiRequest);
+    var response = apiService.registerConnection(request.getDomain() + "/api/connections", apiRequest);
     if (!response.isSuccess()) {
       return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.getMessage());
     }
 
     // Save the new connection to the database
-    var server = new Server(request.getTargetName(), request.getTargetDomain());
+    var server = new Server(request.getDomain());
     var newConnection = new Connection();
     newConnection.setId(connectionId);
+    newConnection.setName(request.getName());
     newConnection.setCallbackUrl(apiRequest.getCallbackUrl());
     newConnection.setStatus(ConnectionStatus.PENDING);
 
-    var connectionDto = openIdService.savePendingConnection(server, newConnection);
+    var connectionDto = openIdService.addPendingConnection(server, newConnection);
 
     return ResponseBuilder.success(connectionDto);
   }

@@ -15,10 +15,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Server extends BaseSqlEntity {
-
-  @Column(name = "name", length = 100, nullable = false)
-  protected String name;
-
   @Column(name = "domain", nullable = false, unique = true)
   protected String domain;
 
@@ -31,9 +27,8 @@ public class Server extends BaseSqlEntity {
     this.owner = ServerOwner.EXTERNAL;
   }
 
-  public Server(String name, String domain) {
+  public Server(String domain) {
     super();
-    this.name = name;
     this.domain = domain;
     this.owner = ServerOwner.EXTERNAL;
   }

@@ -10,6 +10,5 @@ import org.springframework.stereotype.Component;
 @Setter
 @ConfigurationProperties(prefix = "server")
 public class ServerConfig {
-  private String name;
   private String domain;
 }

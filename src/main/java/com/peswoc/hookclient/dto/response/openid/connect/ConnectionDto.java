@@ -14,7 +14,7 @@ public class ConnectionDto {
   private String id;
   private String name;
   private String callbackUrl;
-  private String targetDomain;
+  private String domain;
   private String targetId;
   private String clientId;
   private String clientSecret;
@@ -23,8 +23,8 @@ public class ConnectionDto {
 
   public ConnectionDto(Connection connection) {
     this.id = connection.getId();
-    this.name = connection.getTargetServer().getName();
-    this.targetDomain = connection.getTargetServer().getDomain();
+    this.name = connection.getName();
+    this.domain = connection.getTargetServer().getDomain();
     this.callbackUrl = connection.getCallbackUrl();
     this.createdAt = connection.getCreatedAt();
     this.status = connection.getStatus().toString();

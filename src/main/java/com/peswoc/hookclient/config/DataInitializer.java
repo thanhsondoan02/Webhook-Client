@@ -21,7 +21,7 @@ public class DataInitializer {
   @PostConstruct
   public void initOwnServer() {
     if (!serverRepository.existsOwnerServer()) {
-      var server = new Server(serverConfig.getName(), serverConfig.getDomain());
+      var server = new Server(serverConfig.getDomain());
       server.setOwner(ServerOwner.OWN);
       serverRepository.save(server);
       LogUtils.log(getClass(), "Owner server created with domain: " + serverConfig.getDomain());

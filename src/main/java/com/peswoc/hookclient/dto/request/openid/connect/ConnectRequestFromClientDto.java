@@ -9,6 +9,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ConnectRequestFromClientDto {
   private String name;
-  private String targetName;
-  private String targetDomain;
+  private String domain;
 }

@@ -11,9 +11,9 @@ import java.util.Optional;
 
 public interface ConnectionRepository extends JpaRepository<Connection, String> {
 
-  @Query("SELECT c FROM Connection c WHERE c.id = :id AND c.state = 1 AND c.status = :status")
+  @Query("SELECT c FROM Connection c WHERE c.id = :id AND c.status = :status AND c.state = 1")
   Optional<Connection> findActiveByIdAndStatus(@Param("id") String id, @Param("status") ConnectionStatus status);
 
   @Query("SELECT c FROM Connection c WHERE c.state = 1 AND c.status = :status")
-  List<Connection> findActiveByStatus(ConnectionStatus status);
+  List<Connection> findActiveByStatus(@Param("status") ConnectionStatus status);
 }
